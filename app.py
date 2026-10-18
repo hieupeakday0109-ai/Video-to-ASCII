@@ -8,24 +8,31 @@ else:
     BASE_DIR = os.path.dirname(os.path.abspath(__file__))
 
 def main():
-    # Nếu có tham số dòng lệnh hoặc video được kéo thả vào file exe
-    # thì chạy ngay trình phát video ASCII trong console
-    is_cli = len(sys.argv) > 1 and sys.argv[1] not in ("--gui", "-g")
+    args = sys.argv[1:]
 
-    if is_cli:
-        from ascii_player import main as run_player
+    # Nếu người dùng truyền cờ --cli hoặc --terminal thì mới chạy giao diện dòng lệnh cũ
+    if "--cli" in args or "--terminal" in args:
+        from ascii_player import main as run_cli
         try:
-            run_player()
+            run_cli()
         except Exception as e:
             print(f"\n[!] Lỗi: {e}")
             try:
                 input("\n👉 Nhấn Enter để đóng...")
             except Exception:
                 pass
-    else:
-        # Nếu click đúp mở file exe thì mở bảng điều khiển GUI
-        from gui_launcher import main as run_gui
-        run_gui()
+        return
+
+    # Mặc định: Mở ứng dụng Desktop Player hiện đại (60 FPS, không dùng CMD)
+    # Nếu có truyền file video (hoặc kéo thả video vào file exe) thì phát luôn
+    video_file = None
+    for arg in args:
+        if not arg.startswith("-") and os.path.isfile(arg):
+            video_file = arg
+            break
+
+    from player_gui import main as run_app
+    run_app(video_file)
 
 if __name__ == "__main__":
     main()

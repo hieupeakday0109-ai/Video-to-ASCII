@@ -12,7 +12,7 @@ if (-not (Test-Path $PythonwExe)) {
     $PythonwExe = (Get-Command python).Source
 }
 
-$TargetScript = Join-Path $ScriptDir "gui_launcher.py"
+$TargetScript = Join-Path $ScriptDir "app.py"
 $IconFile = Join-Path $ScriptDir "icon.ico"
 
 $WshShell = New-Object -ComObject WScript.Shell

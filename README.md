@@ -1,112 +1,97 @@
-# Video to ASCII Player (Cross-Platform: Windows, macOS, Linux)
+# 🎬 Video to ASCII Player (Cyberpunk Desktop App)
 
-Chương trình chuyển đổi và phát video trực tiếp trong **Terminal / PowerShell / Command Prompt** bằng các ký tự văn bản ASCII với giao diện bảng điều khiển hiện đại, hỗ trợ đầy đủ trên **Windows, macOS và Linux**!
+<p align="center">
+  <img src="https://img.shields.io/github/v/release/hieupeakday0109-ai/Video-to-ASCII?color=brightgreen&label=Release&style=for-the-badge" alt="Release" />
+  <img src="https://img.shields.io/badge/Platform-Windows%20%7C%20macOS%20%7C%20Linux-blue?style=for-the-badge" alt="Platform" />
+  <img src="https://img.shields.io/badge/FPS-60%20Buttery%20Smooth-success?style=for-the-badge" alt="FPS" />
+  <img src="https://img.shields.io/badge/License-MIT-orange?style=for-the-badge" alt="License" />
+</p>
+
+Ứng dụng xem video phong cách ký tự **ASCII Cyberpunk** thế hệ mới dành cho máy tính. Giao diện Desktop hiện đại, mượt mà chuẩn **60 FPS**, hỗ trợ kéo thả video trực tiếp, đồng bộ âm thanh, thanh tua tiến độ thời gian thực và chuyển đổi chế độ màu sắc tức thì chỉ với một cú nhấp chuột!
 
 ---
 
 ## 🚀 Tải về bản chạy ngay (Không cần cài đặt Python)
 
-👉 **Tải các phiên bản phát hành mới nhất tại:** **[GitHub Releases](https://github.com/hieupeakday0109-ai/Video-to-ASCII/releases)**
+Tải file chạy độc lập (**Standalone Executable**) trực tiếp tại trang:  
+👉 **[GitHub Releases - Video to ASCII Player](https://github.com/hieupeakday0109-ai/Video-to-ASCII/releases)**
 
-| Hệ điều hành | Tệp tải về | Cách sử dụng |
+| Hệ điều hành | File tải về | Hướng dẫn nhanh |
 | :--- | :--- | :--- |
-| **🪟 Windows** | **`VideoToASCII-Windows.exe`** | Nhấp đúp chuột để mở giao diện, hoặc kéo thả video vào file `.exe` để phát ngay! |
-| **🍎 macOS** | **`VideoToASCII-macOS`** | Chạy `chmod +x VideoToASCII-macOS` và nhấp đúp hoặc chạy `./VideoToASCII-macOS` |
-| **🐧 Linux** | **`VideoToASCII-Linux`** | Chạy `chmod +x VideoToASCII-Linux` và chạy `./VideoToASCII-Linux` |
+| **🪟 Windows** | **`VideoToASCII-Windows.exe`** | Nhấp đúp chuột để mở ứng dụng, hoặc kéo thả file video thẳng vào file `.exe`! |
+| **🍎 macOS** | **`VideoToASCII-macOS`** | Cấp quyền `chmod +x VideoToASCII-macOS` và nhấp đúp hoặc chạy `./VideoToASCII-macOS` |
+| **🐧 Linux** | **`VideoToASCII-Linux`** | Cấp quyền `chmod +x VideoToASCII-Linux` và chạy `./VideoToASCII-Linux` |
 
 ---
 
-## ⚡ Hướng dẫn cài đặt bằng mã nguồn (Dành cho nhà phát triển)
+## ✨ Điểm nổi bật của phiên bản App mới
 
-### 🪟 Trên Windows
-1. Tải bản nén từ mục [Releases](https://github.com/hieupeakday0109-ai/Video-to-ASCII/releases) hoặc tải toàn bộ mã nguồn về máy.
-2. Nhấp đúp chuột vào file **`Cai_Dat_Icon.bat`**.
+- 🖥️ **Giao diện Desktop hiện đại (Native GUI):** Không còn chạy qua cửa sổ Command Prompt / Terminal đen sì giật lag. Video được render trực tiếp trong cửa sổ ứng dụng đồ họa chuyên nghiệp.
+- ⚡ **Tốc độ khung hình 60 FPS mượt mà:** Ứng dụng công nghệ **NumPy + OpenCV Glyph Atlas Vectorization**, kết hợp phần cứng tăng tốc giúp chuyển đổi và hiển thị hàng ngàn ký tự ASCII trong tích tắc mà không hề bị xé hình hay giật lag.
+- 🎨 **Đa dạng phong cách hiển thị:**
+  - **Màu sắc TrueColor (RGB):** Tái hiện màu sắc trung thực theo từng pixel của video gốc.
+  - **Phong cách Hacker Matrix:** Tông màu xanh neon đặc trưng của thế giới Cyberpunk huyền thoại.
+  - **Đen trắng cổ điển (Monochrome):** Đồ họa ASCII hoài niệm phong cách máy tính thập niên 80.
+- 🖱️ **Kéo thả thông minh (Drag & Drop):** Giữ chuột kéo bất kỳ video nào (`.mp4`, `.mkv`, `.avi`, `.mov`, `.webm`,...) thả vào cửa sổ ứng dụng là phát ngay lập tức.
+- ⏩ **Thanh tua tiến độ thời gian thực (Scrubber Timeline):** Dễ dàng nhấp hoặc kéo con trỏ trên thanh timeline để tua đến bất kỳ giây nào của video.
+- 🔊 **Âm thanh nền đồng bộ:** Tự động phát âm thanh video khớp từng khung hình, hỗ trợ tạm dừng và tua cùng lúc với hình ảnh.
+- 🖥️ **Chế độ toàn màn hình (Fullscreen):** Nhấn `F11` để tận hưởng trải nghiệm chiếu video ASCII toàn màn hình cực kỳ ấn tượng.
+
+---
+
+## ⌨️ Bảng phím tắt tiện lợi (Hotkeys)
+
+| Phím tắt | Chức năng |
+| :--- | :--- |
+| **`Space`** | Tạm dừng / Tiếp tục phát video (Play / Pause) |
+| **`1`** | Chuyển sang chế độ **Màu sắc TrueColor (RGB)** |
+| **`2`** | Chuyển sang chế độ **Hacker Matrix (Xanh neon)** |
+| **`3`** | Chuyển sang chế độ **Đen trắng (Monochrome)** |
+| **`D`** | Chuyển đổi giữa bộ **70 ký tự siêu nét** và **10 ký tự cơ bản** |
+| **`M`** | Bật / Tắt âm thanh (Mute / Unmute) |
+| **`←` / `→`** | Tua lùi / Tua tiến 5 giây |
+| **`F11`** | Bật / Tắt chế độ toàn màn hình (Fullscreen) |
+| **`Esc`** | Thoát toàn màn hình hoặc đóng ứng dụng |
+
+---
+
+## ⚡ Hướng dẫn cài đặt bằng mã nguồn (Dành cho lập trình viên)
+
+### 🪟 Trên Windows:
+1. Tải toàn bộ mã nguồn về máy hoặc clone qua Git:
+   ```bash
+   git clone https://github.com/hieupeakday0109-ai/Video-to-ASCII.git
+   ```
+2. Nhấp đúp vào file **`Cai_Dat_Icon.bat`**.
 3. Chương trình sẽ tự động cài thư viện và tạo biểu tượng **`Video to ASCII Player`** ra ngoài màn hình chính (Desktop).
 
----
-
-### 🍎 Trên macOS
-1. Mở ứng dụng **Terminal** tại thư mục dự án và chạy:
-   ```bash
-   bash install.sh
-   ```
-2. Script sẽ tự cài đặt thư viện và tạo phím tắt **`Video to ASCII.command`** ngay trên màn hình Desktop của bạn.
-3. Từ lần sau, bạn chỉ cần nhấp đúp vào phím tắt trên Desktop để mở!
-
----
-
-### 🐧 Trên Linux (Ubuntu, Debian, Fedora, Arch,...)
+### 🍎 Trên macOS & 🐧 Linux:
 1. Mở Terminal tại thư mục dự án và chạy:
    ```bash
    bash install.sh
    ```
-2. Script sẽ tự cài đặt thư viện và tạo tệp biểu tượng **`video-to-ascii.desktop`** trên Desktop và Menu ứng dụng của bạn.
+2. Script sẽ tự cài đặt thư viện và tạo biểu tượng mở nhanh ngay trên Desktop của bạn!
 
 ---
 
-## 🎮 Cách sử dụng
+## 🛠️ Cấu trúc thư mục
 
-### 🖱️ 1. Mở từ Icon trên màn hình Desktop:
-1. Nhấp đúp vào biểu tượng **`Video to ASCII Player`** trên Desktop.
-2. Bảng điều khiển trực quan sẽ xuất hiện:
-   - 📂 **Chọn Video:** Chọn bất kỳ video nào trên máy tính (`.mp4`, `.mkv`, `.avi`,...).
-   - 🎨 **Chế độ màu:** Chọn *Màu sắc TrueColor*, *Hacker Matrix (Xanh neon)*, hoặc *Đen trắng cổ điển*.
-   - ⚙️ **Tùy chọn bổ sung:** Tích chọn *Bật âm thanh*, *Bộ 70 ký tự siêu chi tiết*.
-3. Bấm **`▶ BẮT ĐẦU PHÁT VIDEO (OK)`** 👉 Cửa sổ chiếu video sẽ bật lên và phát video ngay lập tức!
-
----
-
-### 🎯 2. Kéo thả video (Windows):
-- Giữ chuột kéo file video bất kỳ **thả thẳng vào file `Play_ASCII.bat`** để chiếu ngay lập tức.
-
----
-
-### 💻 3. Chạy qua dòng lệnh (Terminal):
-```bash
-# Mở bảng chọn video và chế độ tương tác ngay trong terminal
-python3 ascii_player.py
-
-# Hoặc mở bảng điều khiển GUI tích chọn:
-python3 gui_launcher.py
-
-# Hoặc phát trực tiếp video chỉ định:
-python3 ascii_player.py "duong_dan_video.mp4" --direct --color
-```
-
----
-
-## ✨ Tính năng nổi bật
-
-- 🖥️ **Đa nền tảng (Cross-Platform):** Hỗ trợ Windows, macOS và mọi bản phân phối Linux.
-- ⚡ **Chống nhấp nháy (Flicker-Free):** Dùng mã ANSI `\x1b[H` định vị con trỏ, khung hình 30-60 FPS mượt mà tuyệt đối.
-- 🟢 **Chế độ Matrix Hacker:** Chuyển đổi toàn bộ video sang tông màu xanh lá neon Cyberpunk đặc trưng.
-- 🎨 **Màu sắc TrueColor RGB:** Giữ nguyên vẹn màu sắc điểm ảnh gốc của video.
-- 📐 **Tự cân bằng tỷ lệ:** Tự tính toán theo font chữ terminal để video không bị biến dạng kéo dài.
-- 📺 **Tự co giãn:** Tự căn chỉnh vừa khít với kích thước cửa sổ console hiện tại.
-- 🔊 **Âm thanh đồng bộ:** Tự động phát âm thanh nền qua `ffplay` (nếu máy có cài FFmpeg).
-
----
-
-## 🛠️ Cấu trúc dự án
 ```text
 Video-to-ASCII/
 │
-├── Cai_Dat_Icon.bat            # Cài đặt 1-Click trên Windows
-├── install.sh                  # Cài đặt 1-Click trên macOS và Linux
+├── app.py                      # Điểm khởi chạy chính của ứng dụng
+├── player_gui.py               # Ứng dụng Desktop Player đồ họa 60 FPS
+├── ascii_player.py             # Động cơ dự phòng cho dòng lệnh (CLI Terminal)
+├── Cai_Dat_Icon.bat            # Trình cài đặt tự động 1-Click trên Windows
+├── install.sh                  # Trình cài đặt tự động 1-Click trên macOS & Linux
 ├── icon.ico                    # Biểu tượng ứng dụng
-├── gui_launcher.py             # Bảng điều khiển GUI tích chọn chế độ
-├── create_desktop_shortcut.ps1 # Script hỗ trợ tạo shortcut trên Windows
-├── Play_ASCII.bat              # Chạy nhanh trên Windows
-├── ascii_player.py             # Động cơ chính xử lý video sang ASCII
-├── run.ps1                     # Script hỗ trợ chạy trên PowerShell
-├── demo.mp4                    # Video mẫu kiểm tra
+├── Play_ASCII.bat              # Script chạy nhanh ứng dụng trên Windows
 ├── requirements.txt            # Danh sách thư viện Python cần thiết
-├── .gitignore                  # Tệp cấu hình bỏ qua của Git
-├── .github/workflows/          # Tự động đóng gói phát hành Release trên GitHub
-└── README.md                   # Hướng dẫn sử dụng dự án
+├── .github/workflows/          # Quy trình tự động đóng gói release đa nền tảng
+└── README.md                   # Hướng dẫn chi tiết sử dụng dự án
 ```
 
 ---
 
-## 📄 Giấy phép
-Dự án được phát hành dưới giấy phép MIT.
+## 📄 Giấy phép (License)
+Dự án được phân phối miễn phí mã nguồn mở dưới giấy phép [MIT License](LICENSE).

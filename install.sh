@@ -38,13 +38,13 @@ if [[ "$OSTYPE" == "darwin"* ]]; then
 DIR="$(cd "$(dirname "${BASH_SOURCE[0]}")" && pwd)"
 # Tìm thư mục gốc của dự án nếu file shortcut nằm ngoài Desktop
 PROJECT_DIR="$DIR"
-if [ ! -f "$PROJECT_DIR/gui_launcher.py" ]; then
+if [ ! -f "$PROJECT_DIR/app.py" ]; then
 EOF
         echo "PROJECT_DIR=\"$SCRIPT_DIR\"" >> "$LAUNCHER"
         cat << 'EOF' >> "$LAUNCHER"
 fi
 cd "$PROJECT_DIR"
-python3 gui_launcher.py
+python3 app.py
 EOF
         chmod +x "$LAUNCHER"
         echo "[+] Đã tạo biểu tượng mở nhanh ngoài màn hình chính:"
@@ -61,8 +61,8 @@ elif [[ "$OSTYPE" == "linux"* ]]; then
 Version=1.0
 Type=Application
 Name=Video to ASCII Player
-Comment=Phát video bằng ký tự ASCII trên Terminal
-Exec=python3 "$SCRIPT_DIR/gui_launcher.py"
+Comment=Phát video bằng ký tự ASCII
+Exec=python3 "$SCRIPT_DIR/app.py"
 Icon=$SCRIPT_DIR/icon.ico
 Path=$SCRIPT_DIR
 Terminal=false
@@ -83,10 +83,10 @@ echo "======================================================"
 echo "  🎉 CÀI ĐẶT HOÀN TẤT!"
 echo "  Bạn có thể khởi động ứng dụng bằng cách:"
 echo "    - Mở biểu tượng trên màn hình Desktop"
-echo "    - Hoặc chạy lệnh: python3 gui_launcher.py"
+echo "    - Hoặc chạy lệnh: python3 app.py"
 echo "======================================================"
 echo ""
 read -p "👉 Bạn có muốn mở ứng dụng ngay bây giờ không? (Y/n): " choice
 if [[ "$choice" != "n" && "$choice" != "N" ]]; then
-    python3 "$SCRIPT_DIR/gui_launcher.py" &
+    python3 "$SCRIPT_DIR/app.py" &
 fi

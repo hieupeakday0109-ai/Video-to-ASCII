@@ -41,6 +41,6 @@ echo.
 set /p choice="👉 Bạn có muốn mở ứng dụng ngay bây giờ không? (Y/n): "
 if /i "%choice%"=="n" goto end
 
-start "" pythonw "%~dp0gui_launcher.py"
+start "" pythonw "%~dp0app.py"
 
 :end

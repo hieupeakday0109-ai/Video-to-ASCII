@@ -14,10 +14,9 @@ if %ERRORLEVEL% neq 0 (
 
 :: Nếu người dùng KÉO THẢ file video vào biểu tượng file .bat này (%1)
 if not "%~1"=="" (
-    python ascii_player.py "%~1"
-    pause
+    start "" pythonw "%~dp0app.py" "%~1"
     exit /b
 )
 
-:: Mở bảng điều khiển chọn file và tích chọn chế độ
-python gui_launcher.py
+:: Mở ứng dụng Video to ASCII Player (Giao diện 60 FPS không dùng CMD)
+start "" pythonw "%~dp0app.py"
