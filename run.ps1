@@ -1,14 +1,15 @@
 param (
     [Parameter(Mandatory=$false)]
-    [string]$VideoPath = "demo.mp4",
+    [string]$VideoPath = "",
 
-    [switch]$Color,
+    [switch]$Mono,
     [switch]$Detailed,
     [switch]$NoAudio
 )
 
-$cmdArgs = @("ascii_player.py", $VideoPath)
-if ($Color) { $cmdArgs += "--color" }
+$cmdArgs = @("ascii_player.py")
+if ($VideoPath -ne "") { $cmdArgs += $VideoPath }
+if ($Mono) { $cmdArgs += "--mono" }
 if ($Detailed) { $cmdArgs += "--detailed" }
 if ($NoAudio) { $cmdArgs += "--no-audio" }
 
