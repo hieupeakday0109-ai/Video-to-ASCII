@@ -20,80 +20,121 @@ except ImportError:
 ASCII_RAMP_SIMPLE = " .:-=+*#%@"
 ASCII_RAMP_DETAILED = " .'`^\",:;Il!i~+_-?][}{1)(|/tfjrxnuvczXYUJCLQ0OZmwqpdbkhao*#MW&8%B@$"
 
-def select_file_gui():
-    """Mở hộp thoại chọn tệp của Windows để người dùng không phải gõ lệnh"""
-    try:
-        import tkinter as tk
-        from tkinter import filedialog
-        root = tk.Tk()
-        root.withdraw()
-        root.attributes("-topmost", True)
-        file_path = filedialog.askopenfilename(
-            title="Chọn file video bạn muốn phát",
-            filetypes=[
-                ("Video Files", "*.mp4 *.mkv *.avi *.mov *.wmv *.flv *.webm"),
-                ("All Files", "*.*")
-            ]
-        )
-        root.destroy()
-        if file_path and os.path.isfile(file_path):
-            return os.path.abspath(file_path)
-    except Exception:
-        pass
-    return None
+VIDEO_EXTENSIONS = {".mp4", ".mkv", ".avi", ".mov", ".wmv", ".flv", ".webm", ".ts", ".m4v"}
 
-def prompt_video_input():
-    """Hỏi video nếu chưa có tệp được truyền vào"""
-    print("\n" + "=" * 66)
-    print("   🎬 TRÌNH PHÁT VIDEO KÝ TỰ ASCII CHO POWERSHELL / TERMINAL 🎬")
-    print("=" * 66)
-    print("[*] Đang mở cửa sổ chọn file video (hoặc bạn có thể kéo thả vào đây)...")
+def get_format_size(size_in_bytes):
+    """Chuyển đổi kích thước file sang KB, MB dễ đọc"""
+    if size_in_bytes < 1024 * 1024:
+        return f"{size_in_bytes / 1024:.1f} KB"
+    return f"{size_in_bytes / (1024 * 1024):.1f} MB"
 
-    selected = select_file_gui()
-    if selected:
-        return selected
+def scan_local_videos():
+    """Tìm tất cả các file video trong thư mục hiện tại và thư mục của mã nguồn"""
+    dirs_to_check = [os.getcwd(), os.path.dirname(os.path.abspath(__file__))]
+    found_videos = []
+    seen_paths = set()
+
+    for d in dirs_to_check:
+        if not os.path.isdir(d):
+            continue
+        try:
+            for item in os.listdir(d):
+                full_path = os.path.join(d, item)
+                if os.path.isfile(full_path):
+                    _, ext = os.path.splitext(item)
+                    if ext.lower() in VIDEO_EXTENSIONS and full_path not in seen_paths:
+                        seen_paths.add(full_path)
+                        found_videos.append(full_path)
+        except Exception:
+            pass
+
+    found_videos.sort(key=lambda p: os.path.basename(p).lower())
+    return found_videos
+
+def prompt_video_terminal_menu():
+    """Bảng menu chọn video trực tiếp trong PowerShell, không mở cửa sổ pop-up/panel"""
+    CYAN = "\x1b[36;1m"
+    GREEN = "\x1b[32;1m"
+    YELLOW = "\x1b[33;1m"
+    BOLD = "\x1b[1m"
+    RESET = "\x1b[0m"
 
     while True:
-        user_input = input("\n👉 KÉO THẢ file video vào đây rồi nhấn Enter (hoặc 'q' để thoát): ").strip()
-        if user_input.lower() == 'q':
+        videos = scan_local_videos()
+
+        print("\n" + "=" * 68)
+        print(f"{CYAN}          🎬 VIDEO TO ASCII - BẢNG CHỌN VIDEO TRỰC TIẾP 🎬{RESET}")
+        print("=" * 68)
+
+        if videos:
+            print(f" {BOLD}Danh sách video tìm thấy trong thư mục:{RESET}")
+            for idx, vid in enumerate(videos, start=1):
+                name = os.path.basename(vid)
+                try:
+                    size = get_format_size(os.path.getsize(vid))
+                except Exception:
+                    size = "Unknown"
+                default_tag = f" {CYAN}[MẶC ĐỊNH]{RESET}" if idx == 1 else ""
+                print(f"   {GREEN}[{idx}]{RESET} {YELLOW}{name:<32}{RESET} ({size}){default_tag}")
+            print("─" * 68)
+            print(f" 👉 Nhập số {BOLD}[1-{len(videos)}]{RESET} (hoặc bấm {GREEN}[Enter]{RESET} để chọn số [1])")
+        else:
+            print(f" {YELLOW}[!] Chưa có sẵn file video nào trong thư mục này.{RESET}")
+            print("─" * 68)
+
+        print(f" 👉 Hoặc {BOLD}KÉO THẢ{RESET} bất kỳ file video nào vào đây rồi bấm {GREEN}Enter{RESET}")
+        print("=" * 68)
+
+        user_input = input(" 📁 Nhập lựa chọn của bạn: ").strip()
+
+        # Người dùng muốn thoát
+        if user_input.lower() in {"q", "exit", "quit"}:
             sys.exit(0)
-        
+
+        # Nếu người dùng bấm Enter luôn khi có danh sách video
+        if user_input == "" and videos:
+            return videos[0]
+
+        # Nếu người dùng chọn theo số thứ tự trong bảng
+        if user_input.isdigit():
+            choice_num = int(user_input)
+            if 1 <= choice_num <= len(videos):
+                return videos[choice_num - 1]
+            else:
+                print(f"\n[-] Số {choice_num} không có trong danh sách. Vui lòng chọn lại!")
+                continue
+
+        # Nếu người dùng kéo thả file hoặc dán đường dẫn trực tiếp
         cleaned_path = user_input.strip("\"' ")
         if os.path.isfile(cleaned_path):
             return os.path.abspath(cleaned_path)
-        elif os.path.isfile("demo.mp4") and user_input == "":
-            print("[*] Tự động chọn video mẫu demo.mp4")
-            return os.path.abspath("demo.mp4")
-        else:
-            print("[-] Không tìm thấy file video hợp lệ. Vui lòng thử lại!")
+
+        print("\n[-] Không tìm thấy file video hợp lệ. Vui lòng thử lại!")
 
 def show_mode_menu(video_path):
     """Bảng menu tương tác đẹp mắt cho phép người dùng chọn chế độ phát"""
     file_name = os.path.basename(video_path)
     
-    # ANSI escape code màu cho menu
     CYAN = "\x1b[36;1m"
     GREEN = "\x1b[32;1m"
     YELLOW = "\x1b[33;1m"
-    MAGENTA = "\x1b[35;1m"
     BOLD = "\x1b[1m"
     RESET = "\x1b[0m"
 
-    print("\n" + "=" * 66)
-    print(f"{CYAN}   🎬 VIDEO TO ASCII PLAYER - BẢNG ĐIỀU KHIỂN & CHỌN CHẾ ĐỘ 🎬{RESET}")
-    print("=" * 66)
+    print("\n" + "=" * 68)
+    print(f"{CYAN}       🎬 VIDEO TO ASCII PLAYER - BẢNG ĐIỀU KHIỂN CHẾ ĐỘ 🎬{RESET}")
+    print("=" * 68)
     print(f" 📁 Video đang chọn: {YELLOW}{file_name}{RESET}")
-    print("─" * 66)
+    print("─" * 68)
     print(f" {GREEN}[1]{RESET} {BOLD}🎨 Màu sắc TrueColor{RESET} (RGB sống động, sắc nét)    {CYAN}[MẶC ĐỊNH]{RESET}")
     print(f" {GREEN}[2]{RESET} {BOLD}📺 Đen trắng cổ điển{RESET} (Classic ASCII Monochrome)")
     print(f" {GREEN}[3]{RESET} {BOLD}🟢 Phong cách Hacker Matrix{RESET} (Xanh Neon Cyberpunk)")
     print(f" {GREEN}[4]{RESET} {BOLD}💎 Siêu chi tiết Full HD{RESET} (Bộ ký tự mở rộng 70 ký tự)")
     print(f" {GREEN}[5]{RESET} {BOLD}🔇 Chế độ im lặng{RESET} (Phát không tiếng / Mute)")
-    print("─" * 66)
+    print("─" * 68)
     
     choice = input(f" 👉 Nhấn {GREEN}[Enter]{RESET} để chạy chế độ [1], hoặc nhập {BOLD}[1-5]{RESET}: ").strip()
     
-    # Cấu hình tương ứng với lựa chọn
     if choice == "2":
         return {"color": False, "detailed": False, "matrix": False, "with_audio": True}
     elif choice == "3":
@@ -103,7 +144,6 @@ def show_mode_menu(video_path):
     elif choice == "5":
         return {"color": True, "detailed": False, "matrix": False, "with_audio": False}
     else:
-        # Mặc định lựa chọn 1
         return {"color": True, "detailed": False, "matrix": False, "with_audio": True}
 
 def play_video(video_path, color=True, detailed=False, matrix=False, with_audio=True):
@@ -126,14 +166,12 @@ def play_video(video_path, color=True, detailed=False, matrix=False, with_audio=
     ramp_chars = np.array(list(ramp))
     num_chars = len(ramp)
 
-    # Tỷ lệ ký tự terminal (chiều cao gấp đôi bề rộng)
     CHAR_ASPECT_RATIO = 0.5
 
     # Ẩn con trỏ chuột và xóa màn hình
     sys.stdout.write("\x1b[?25l\x1b[2J")
     sys.stdout.flush()
 
-    # Phát âm thanh nền đồng bộ bằng ffplay nếu có
     audio_proc = None
     if with_audio and shutil.which("ffplay"):
         try:
@@ -156,7 +194,6 @@ def play_video(video_path, color=True, detailed=False, matrix=False, with_audio=
 
             frame_count += 1
 
-            # Lấy kích thước terminal hiện tại
             term_cols, term_lines = shutil.get_terminal_size(fallback=(80, 24))
             max_w = term_cols
             max_h = term_lines - 1
@@ -223,11 +260,9 @@ def play_video(video_path, color=True, detailed=False, matrix=False, with_audio=
                 output_lines = ["".join(row) for row in char_grid]
                 buffer = "\x1b[H" + "\n".join(output_lines)
 
-            # In đè lên màn hình
             sys.stdout.write(buffer)
             sys.stdout.flush()
 
-            # Giữ đúng FPS
             target_time = start_time + (frame_count * frame_delay)
             sleep_duration = target_time - time.time()
             if sleep_duration > 0:
@@ -259,14 +294,14 @@ def main():
 
     args = parser.parse_args()
 
-    # 1. Chọn video nếu chưa truyền vào
+    # 1. Chọn video (bằng menu dòng lệnh, KHÔNG dùng cửa sổ popup)
     video_path = args.video
     interactive = False
     if not video_path:
-        video_path = prompt_video_input()
+        video_path = prompt_video_terminal_menu()
         interactive = True
 
-    # 2. Nếu chạy tương tác hoặc người dùng truyền cờ --menu (hoặc kéo thả vào .bat không có cờ)
+    # 2. Hiển thị menu chọn chế độ
     has_flags = args.mono or args.matrix or args.detailed or args.no_audio
     if interactive or args.menu or not has_flags:
         settings = show_mode_menu(video_path)
@@ -278,7 +313,6 @@ def main():
             with_audio=settings["with_audio"]
         )
     else:
-        # Nếu người dùng tự truyền cờ qua dòng lệnh
         play_video(
             video_path=video_path,
             color=not args.mono and not args.matrix,
