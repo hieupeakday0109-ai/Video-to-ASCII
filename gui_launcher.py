@@ -1,18 +1,33 @@
 import os
 import sys
+import shutil
 import subprocess
 import tkinter as tk
 from tkinter import ttk, filedialog, messagebox
 
 SCRIPT_DIR = os.path.dirname(os.path.abspath(__file__))
 PLAYER_SCRIPT = os.path.join(SCRIPT_DIR, "ascii_player.py")
-PYTHON_EXE = sys.executable
+
+def get_console_python():
+    """Đảm bảo luôn lấy python.exe (có giao diện console), KHÔNG dùng pythonw.exe"""
+    exe = sys.executable
+    if "pythonw" in os.path.basename(exe).lower():
+        dir_name = os.path.dirname(exe)
+        cand = os.path.join(dir_name, "python.exe")
+        if os.path.isfile(cand):
+            return cand
+    cand = shutil.which("python")
+    if cand:
+        return cand
+    return exe
+
+PYTHON_EXE = get_console_python()
 
 class AsciiPlayerLauncher:
     def __init__(self, root):
         self.root = root
         self.root.title("🎬 Video to ASCII Player - Cấu hình")
-        self.root.geometry("520x480")
+        self.root.geometry("540x500")
         self.root.resizable(False, False)
 
         # Cài đặt giao diện tối hiện đại
@@ -40,9 +55,12 @@ class AsciiPlayerLauncher:
         self.audio_var = tk.BooleanVar(value=True)       # True / False
         self.detailed_var = tk.BooleanVar(value=False)   # True / False
 
-        # Tự động chọn file video demo nếu có sẵn trong thư mục
+        # Tự động tìm kiếm video mẫu hoặc video gần nhất (ví dụ 2.mp4 trong Downloads hoặc demo.mp4)
+        dl_2mp4 = os.path.expanduser(r"~\Downloads\2.mp4")
         demo_file = os.path.join(SCRIPT_DIR, "demo.mp4")
-        if os.path.isfile(demo_file):
+        if os.path.isfile(dl_2mp4):
+            self.video_path_var.set(dl_2mp4)
+        elif os.path.isfile(demo_file):
             self.video_path_var.set(demo_file)
 
         self.build_ui()
@@ -126,7 +144,7 @@ class AsciiPlayerLauncher:
     def start_playback(self):
         video = self.video_path_var.get().strip("\"' ")
         if not video or not os.path.isfile(video):
-            messagebox.showwarning("Chưa chọn video", "Vui lòng chọn một file video hợp lệ trước khi bắt đầu!")
+            messagebox.showwarning("Chưa chọn video", f"Không tìm thấy file video:\n{video}\nVui lòng chọn lại!")
             return
 
         cmd_flags = ["--direct"]
@@ -144,16 +162,19 @@ class AsciiPlayerLauncher:
         if not self.audio_var.get():
             cmd_flags.append("--no-audio")
 
-        # Khởi chạy trực tiếp Python trong một cửa sổ Console độc lập
+        flags_str = " ".join(cmd_flags)
+        
+        # Đảm bảo dùng python.exe chuẩn, và lệnh pause để không bao giờ bị đóng cửa sổ đột ngột
+        full_command = f'"{PYTHON_EXE}" "{PLAYER_SCRIPT}" "{video}" {flags_str} & pause'
+
         try:
-            full_cmd = [PYTHON_EXE, PLAYER_SCRIPT, video] + cmd_flags
             subprocess.Popen(
-                full_cmd,
+                ["cmd.exe", "/k", full_command],
                 cwd=SCRIPT_DIR,
                 creationflags=subprocess.CREATE_NEW_CONSOLE
             )
         except Exception as e:
-            messagebox.showerror("Lỗi khởi chạy", f"Không thể khởi chạy trình phát video:\n{e}")
+            messagebox.showerror("Lỗi khởi chạy", f"Không thể khởi chạy:\n{e}")
 
 def main():
     root = tk.Tk()
