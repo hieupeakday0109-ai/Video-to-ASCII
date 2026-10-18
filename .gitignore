@@ -12,6 +12,7 @@ Thumbs.db
 .idea/
 
 # Large video files (keep demo.mp4 if desired)
+play.bat
 *.avi
 *.mkv
 *.mov

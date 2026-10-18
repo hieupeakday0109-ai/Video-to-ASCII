@@ -1,7 +1,6 @@
 import os
 import sys
 import shutil
-import subprocess
 import tkinter as tk
 from tkinter import ttk, filedialog, messagebox
 
@@ -55,13 +54,13 @@ class AsciiPlayerLauncher:
         self.audio_var = tk.BooleanVar(value=True)       # True / False
         self.detailed_var = tk.BooleanVar(value=False)   # True / False
 
-        # Tự động tìm kiếm video mẫu hoặc video gần nhất (ví dụ 2.mp4 trong Downloads hoặc demo.mp4)
+        # Tự động tìm kiếm video mẫu hoặc video gần nhất (ưu tiên 2.mp4 trong Downloads hoặc demo.mp4)
         dl_2mp4 = os.path.expanduser(r"~\Downloads\2.mp4")
         demo_file = os.path.join(SCRIPT_DIR, "demo.mp4")
         if os.path.isfile(dl_2mp4):
-            self.video_path_var.set(dl_2mp4)
+            self.video_path_var.set(os.path.abspath(dl_2mp4))
         elif os.path.isfile(demo_file):
-            self.video_path_var.set(demo_file)
+            self.video_path_var.set(os.path.abspath(demo_file))
 
         self.build_ui()
 
@@ -163,16 +162,23 @@ class AsciiPlayerLauncher:
             cmd_flags.append("--no-audio")
 
         flags_str = " ".join(cmd_flags)
-        
-        # Đảm bảo dùng python.exe chuẩn, và lệnh pause để không bao giờ bị đóng cửa sổ đột ngột
-        full_command = f'"{PYTHON_EXE}" "{PLAYER_SCRIPT}" "{video}" {flags_str} & pause'
+        py_exe = get_console_python()
+
+        # Tạo file batch tạm thời để chạy bằng Win32 ShellExecute (os.startfile)
+        # Cách này tránh 100% lỗi escape dấu ngoặc kép trên Windows
+        play_bat = os.path.join(SCRIPT_DIR, "play.bat")
+        bat_content = (
+            "@echo off\r\n"
+            "chcp 65001 >nul\r\n"
+            "title Video to ASCII Player\r\n"
+            f'"{py_exe}" "{PLAYER_SCRIPT}" "{video}" {flags_str}\r\n'
+            "pause\r\n"
+        )
 
         try:
-            subprocess.Popen(
-                ["cmd.exe", "/k", full_command],
-                cwd=SCRIPT_DIR,
-                creationflags=subprocess.CREATE_NEW_CONSOLE
-            )
+            with open(play_bat, "w", encoding="utf-8") as f:
+                f.write(bat_content)
+            os.startfile(play_bat)
         except Exception as e:
             messagebox.showerror("Lỗi khởi chạy", f"Không thể khởi chạy:\n{e}")
 
