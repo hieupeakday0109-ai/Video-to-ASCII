@@ -1,0 +1,19 @@
+# Byte-compiled / optimized / DLL files
+__pycache__/
+*.py[cod]
+*$py.class
+
+# C++ / OS files
+.DS_Store
+Thumbs.db
+
+# IDEs
+.vscode/
+.idea/
+
+# Large video files (keep demo.mp4 if desired)
+*.avi
+*.mkv
+*.mov
+*.wmv
+*.flv
