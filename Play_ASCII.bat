@@ -19,6 +19,5 @@ if not "%~1"=="" (
     exit /b
 )
 
-:: Nếu click đúp mở file .bat
-python ascii_player.py
-pause
+:: Mở bảng điều khiển chọn file và tích chọn chế độ
+python gui_launcher.py

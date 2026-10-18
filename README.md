@@ -1,43 +1,45 @@
 # Video to ASCII Player (PowerShell / Windows Terminal)
 
-Chương trình chuyển đổi và phát video trực tiếp trong **PowerShell**, **Command Prompt** hoặc **Windows Terminal** bằng các ký tự văn bản ASCII với hệ thống **bảng chọn video & chế độ phát hoàn toàn trong Terminal** (không dùng cửa sổ pop-up).
+Chương trình chuyển đổi và phát video trực tiếp trong **PowerShell**, **Command Prompt** hoặc **Windows Terminal** bằng các ký tự văn bản ASCII.
 
 ---
 
-## ⚡ Thao tác siêu tốc 100% trong Terminal
+## 🌟 Trải nghiệm ứng dụng với Icon trên màn hình (Desktop)
 
-### 🖱️ Cách 1: Kéo & thả video vào `Play_ASCII.bat` (Nhanh nhất)
-- Giữ chuột kéo file video (`.mp4`, `.mkv`, `.avi`,...) **thả thẳng vào file `Play_ASCII.bat`**.
-- Bảng chọn chế độ sẽ hiện ra trong terminal 👉 Bấm **Enter** là chạy ngay!
+### 🖱️ 1. Mở từ Icon trên màn hình Desktop:
+1. Nhấp đúp vào biểu tượng **`Video to ASCII Player`** trên màn hình Desktop của bạn.
+2. Bảng điều khiển trực quan sẽ xuất hiện:
+   - 📂 **Chọn Video:** Chọn bất kỳ video nào trên máy tính (`.mp4`, `.mkv`, `.avi`,...).
+   - 🎨 **Chế độ màu:** Chọn *Màu sắc TrueColor*, *Hacker Matrix (Xanh neon)*, hoặc *Đen trắng cổ điển*.
+   - ☑️ **Tích chọn tính năng:** Bật/tắt âm thanh, bật chế độ 70 ký tự siêu chi tiết.
+   - 👉 Nhấn nút **`▶ BẮT ĐẦU PHÁT VIDEO (OK)`** là cửa sổ trình chiếu ASCII sẽ hiện ra ngay lập tức!
 
-### 💻 Cách 2: Chạy trực tiếp `Play_ASCII.bat` hoặc lệnh `python`
-1. Nhấp đúp vào **`Play_ASCII.bat`** (hoặc gõ `python ascii_player.py` trong PowerShell).
-2. Chương trình sẽ tự quét và hiển thị **Bảng danh sách video có sẵn** ngay trên màn hình:
-   ```text
-   ====================================================================
-             🎬 VIDEO TO ASCII - BẢNG CHỌN VIDEO TRỰC TIẾP 🎬
-   ====================================================================
-    Danh sách video tìm thấy trong thư mục:
-      [1] demo.mp4                         (73.2 KB) [MẶC ĐỊNH]
-      [2] my_video.mp4                     (15.4 MB)
-   ────────────────────────────────────────────────────────────────────
-    👉 Nhập số [1-2] (hoặc bấm [Enter] để chọn số [1])
-    👉 Hoặc KÉO THẢ bất kỳ file video nào vào đây rồi bấm Enter
-   ====================================================================
-   ```
-3. Sau khi chọn video, bảng **chọn chế độ phát** sẽ hiện ra:
-   - **[1]** 🎨 Màu sắc TrueColor (RGB sống động, sắc nét) - *[Mặc định]*
-   - **[2]** 📺 Đen trắng cổ điển (Monochrome ASCII)
-   - **[3]** 🟢 Phong cách Hacker Matrix (Xanh Neon Cyberpunk)
-   - **[4]** 💎 Siêu chi tiết Full HD (Bộ ký tự mở rộng 70 ký tự)
-   - **[5]** 🔇 Chế độ im lặng (Tắt tiếng)
-4. 👉 Chỉ cần bấm **Enter** để chạy chế độ đẹp nhất!
+*(Nếu muốn tạo lại icon ngoài Desktop, bạn chỉ cần chạy script `create_desktop_shortcut.ps1`)*.
+
+---
+
+### 🎯 2. Kéo thả video vào `Play_ASCII.bat`:
+- Giữ chuột kéo file video bất kỳ **thả thẳng vào file `Play_ASCII.bat`** để phát ngay lập tức.
+
+---
+
+### 💻 3. Chạy qua dòng lệnh (Terminal):
+```bash
+# Mở bảng chọn video và chế độ tương tác ngay trong terminal
+python ascii_player.py
+
+# Hoặc mở bảng điều khiển GUI tích chọn:
+python gui_launcher.py
+
+# Hoặc phát trực tiếp video chỉ định:
+python ascii_player.py "duong_dan_video.mp4" --matrix
+```
 
 ---
 
 ## ✨ Tính năng nổi bật
 
-- 🖥️ **Giao diện 100% Terminal:** Không bật bất kỳ cửa sổ pop-up/panel nào, tất cả đều hiển thị thành bảng đẹp mắt ngay trong PowerShell.
+- 🖥️ **Icon & Bảng điều khiển tiện lợi:** Bấm vào icon Desktop, tích chọn chế độ tùy thích rồi bấm OK là xem được ngay.
 - ⚡ **Chống nhấp nháy (Flicker-Free):** Dùng mã ANSI `\x1b[H` định vị con trỏ, khung hình 30-60 FPS mượt mà tuyệt đối.
 - 🟢 **Chế độ Matrix Hacker:** Chuyển đổi toàn bộ video sang tông màu xanh lá neon Cyberpunk đặc trưng.
 - 🎨 **Màu sắc TrueColor RGB:** Giữ nguyên vẹn màu sắc điểm ảnh gốc của video.
@@ -47,13 +49,20 @@ Chương trình chuyển đổi và phát video trực tiếp trong **PowerShell
 
 ---
 
-## 🚀 Cài đặt thư viện (nếu dùng trên máy mới)
-
-```bash
-pip install -r requirements.txt
+## 🛠️ Cấu trúc dự án
+```text
+Video-to-ASCII/
+│
+├── gui_launcher.py             # Bảng điều khiển GUI tích chọn chế độ và chọn file
+├── create_desktop_shortcut.ps1 # Script tạo icon ra màn hình Desktop
+├── Play_ASCII.bat              # File chạy nhanh (click đúp hoặc kéo thả video vào)
+├── ascii_player.py             # Mã nguồn chính xử lý video sang ASCII
+├── run.ps1                     # Script hỗ trợ chạy trên PowerShell
+├── demo.mp4                    # Video mẫu kiểm tra
+├── requirements.txt            # Danh sách thư viện Python cần thiết
+├── .gitignore                  # Tệp cấu hình bỏ qua của Git
+└── README.md                   # Hướng dẫn sử dụng dự án
 ```
-
-> **Mẹo:** Nhấn tổ hợp phím `Ctrl + C` bất cứ lúc nào để dừng phát video.
 
 ---
 
