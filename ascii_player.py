@@ -5,7 +5,7 @@ import argparse
 import shutil
 import subprocess
 
-# Kiểm tra thư viện phụ thuộc
+# Tự động kiểm tra và cài đặt thư viện nếu thiếu
 try:
     import cv2
     import numpy as np
@@ -26,8 +26,8 @@ def select_file_gui():
         import tkinter as tk
         from tkinter import filedialog
         root = tk.Tk()
-        root.withdraw()  # Ẩn cửa sổ chính của Tkinter
-        root.attributes("-topmost", True)  # Đưa cửa sổ chọn tệp lên trên cùng
+        root.withdraw()
+        root.attributes("-topmost", True)
         file_path = filedialog.askopenfilename(
             title="Chọn file video bạn muốn phát",
             filetypes=[
@@ -37,40 +37,76 @@ def select_file_gui():
         )
         root.destroy()
         if file_path and os.path.isfile(file_path):
-            return file_path
+            return os.path.abspath(file_path)
     except Exception:
         pass
     return None
 
 def prompt_video_input():
-    """Cho phép kéo thả video vào cửa sổ terminal hoặc mở cửa sổ chọn tệp"""
-    print("=" * 60)
+    """Hỏi video nếu chưa có tệp được truyền vào"""
+    print("\n" + "=" * 66)
     print("   🎬 TRÌNH PHÁT VIDEO KÝ TỰ ASCII CHO POWERSHELL / TERMINAL 🎬")
-    print("=" * 60)
-
-    # Thử mở cửa sổ chọn file
+    print("=" * 66)
     print("[*] Đang mở cửa sổ chọn file video (hoặc bạn có thể kéo thả vào đây)...")
+
     selected = select_file_gui()
     if selected:
         return selected
 
-    # Nếu tắt cửa sổ chọn file thì cho phép kéo thả trực tiếp
     while True:
         user_input = input("\n👉 KÉO THẢ file video vào đây rồi nhấn Enter (hoặc 'q' để thoát): ").strip()
         if user_input.lower() == 'q':
             sys.exit(0)
         
-        # Xóa dấu nháy kép / nháy đơn mà Windows tự thêm khi kéo thả file
         cleaned_path = user_input.strip("\"' ")
         if os.path.isfile(cleaned_path):
-            return cleaned_path
+            return os.path.abspath(cleaned_path)
         elif os.path.isfile("demo.mp4") and user_input == "":
             print("[*] Tự động chọn video mẫu demo.mp4")
-            return "demo.mp4"
+            return os.path.abspath("demo.mp4")
         else:
             print("[-] Không tìm thấy file video hợp lệ. Vui lòng thử lại!")
 
-def play_video(video_path, color=True, detailed=False, with_audio=True):
+def show_mode_menu(video_path):
+    """Bảng menu tương tác đẹp mắt cho phép người dùng chọn chế độ phát"""
+    file_name = os.path.basename(video_path)
+    
+    # ANSI escape code màu cho menu
+    CYAN = "\x1b[36;1m"
+    GREEN = "\x1b[32;1m"
+    YELLOW = "\x1b[33;1m"
+    MAGENTA = "\x1b[35;1m"
+    BOLD = "\x1b[1m"
+    RESET = "\x1b[0m"
+
+    print("\n" + "=" * 66)
+    print(f"{CYAN}   🎬 VIDEO TO ASCII PLAYER - BẢNG ĐIỀU KHIỂN & CHỌN CHẾ ĐỘ 🎬{RESET}")
+    print("=" * 66)
+    print(f" 📁 Video đang chọn: {YELLOW}{file_name}{RESET}")
+    print("─" * 66)
+    print(f" {GREEN}[1]{RESET} {BOLD}🎨 Màu sắc TrueColor{RESET} (RGB sống động, sắc nét)    {CYAN}[MẶC ĐỊNH]{RESET}")
+    print(f" {GREEN}[2]{RESET} {BOLD}📺 Đen trắng cổ điển{RESET} (Classic ASCII Monochrome)")
+    print(f" {GREEN}[3]{RESET} {BOLD}🟢 Phong cách Hacker Matrix{RESET} (Xanh Neon Cyberpunk)")
+    print(f" {GREEN}[4]{RESET} {BOLD}💎 Siêu chi tiết Full HD{RESET} (Bộ ký tự mở rộng 70 ký tự)")
+    print(f" {GREEN}[5]{RESET} {BOLD}🔇 Chế độ im lặng{RESET} (Phát không tiếng / Mute)")
+    print("─" * 66)
+    
+    choice = input(f" 👉 Nhấn {GREEN}[Enter]{RESET} để chạy chế độ [1], hoặc nhập {BOLD}[1-5]{RESET}: ").strip()
+    
+    # Cấu hình tương ứng với lựa chọn
+    if choice == "2":
+        return {"color": False, "detailed": False, "matrix": False, "with_audio": True}
+    elif choice == "3":
+        return {"color": False, "detailed": False, "matrix": True, "with_audio": True}
+    elif choice == "4":
+        return {"color": True, "detailed": True, "matrix": False, "with_audio": True}
+    elif choice == "5":
+        return {"color": True, "detailed": False, "matrix": False, "with_audio": False}
+    else:
+        # Mặc định lựa chọn 1
+        return {"color": True, "detailed": False, "matrix": False, "with_audio": True}
+
+def play_video(video_path, color=True, detailed=False, matrix=False, with_audio=True):
     video_path = os.path.abspath(video_path)
     if not os.path.isfile(video_path):
         print(f"[-] Không tìm thấy tệp video: {video_path}")
@@ -90,14 +126,14 @@ def play_video(video_path, color=True, detailed=False, with_audio=True):
     ramp_chars = np.array(list(ramp))
     num_chars = len(ramp)
 
-    # Tỷ lệ hiển thị ký tự (chiều cao ký tự terminal gấp đôi bề ngang)
+    # Tỷ lệ ký tự terminal (chiều cao gấp đôi bề rộng)
     CHAR_ASPECT_RATIO = 0.5
 
     # Ẩn con trỏ chuột và xóa màn hình
     sys.stdout.write("\x1b[?25l\x1b[2J")
     sys.stdout.flush()
 
-    # Tự động đồng bộ âm thanh nền bằng ffplay nếu có
+    # Phát âm thanh nền đồng bộ bằng ffplay nếu có
     audio_proc = None
     if with_audio and shutil.which("ffplay"):
         try:
@@ -120,10 +156,10 @@ def play_video(video_path, color=True, detailed=False, with_audio=True):
 
             frame_count += 1
 
-            # Lấy kích thước hiện tại của cửa sổ terminal
+            # Lấy kích thước terminal hiện tại
             term_cols, term_lines = shutil.get_terminal_size(fallback=(80, 24))
             max_w = term_cols
-            max_h = term_lines - 1  # Để lại 1 dòng tránh cuộn màn hình
+            max_h = term_lines - 1
 
             h, w = frame.shape[:2]
             aspect = (w / h) / CHAR_ASPECT_RATIO
@@ -140,8 +176,29 @@ def play_video(video_path, color=True, detailed=False, with_audio=True):
 
             resized = cv2.resize(frame, (target_w, target_h), interpolation=cv2.INTER_AREA)
 
-            if color:
-                # Chế độ màu sắc ANSI TrueColor (siêu đẹp)
+            if matrix:
+                # Chế độ Matrix Hacker: Xanh lá neon theo độ sáng
+                gray = cv2.cvtColor(resized, cv2.COLOR_BGR2GRAY)
+                indices = ((gray.astype(np.float32) / 255.0) * (num_chars - 1)).astype(np.int32)
+                char_grid = ramp_chars[indices]
+
+                output_lines = []
+                for row_idx in range(target_h):
+                    line_parts = []
+                    row_gray = gray[row_idx]
+                    row_chars = char_grid[row_idx]
+                    for col_idx in range(target_w):
+                        val = row_gray[col_idx]
+                        ch = row_chars[col_idx]
+                        r = int(val * 0.15)
+                        g = val
+                        b = int(val * 0.25)
+                        line_parts.append(f"\x1b[38;2;{r};{g};{b}m{ch}")
+                    output_lines.append("".join(line_parts) + "\x1b[0m")
+                buffer = "\x1b[H" + "\n".join(output_lines)
+
+            elif color:
+                # Chế độ màu TrueColor RGB
                 rgb = cv2.cvtColor(resized, cv2.COLOR_BGR2RGB)
                 gray = cv2.cvtColor(resized, cv2.COLOR_BGR2GRAY)
                 indices = ((gray.astype(np.float32) / 255.0) * (num_chars - 1)).astype(np.int32)
@@ -159,14 +216,14 @@ def play_video(video_path, color=True, detailed=False, with_audio=True):
                     output_lines.append("".join(line_parts) + "\x1b[0m")
                 buffer = "\x1b[H" + "\n".join(output_lines)
             else:
-                # Chế độ đen trắng (ASCII cổ điển, siêu nhẹ)
+                # Chế độ đen trắng cổ điển
                 gray = cv2.cvtColor(resized, cv2.COLOR_BGR2GRAY)
                 indices = ((gray.astype(np.float32) / 255.0) * (num_chars - 1)).astype(np.int32)
                 char_grid = ramp_chars[indices]
                 output_lines = ["".join(row) for row in char_grid]
                 buffer = "\x1b[H" + "\n".join(output_lines)
 
-            # In đè lên màn hình mà không chớp nháy
+            # In đè lên màn hình
             sys.stdout.write(buffer)
             sys.stdout.flush()
 
@@ -194,23 +251,41 @@ def main():
         description="Trình phát video bằng ký tự ASCII trên PowerShell / Terminal."
     )
     parser.add_argument("video", nargs="?", default=None, help="Đường dẫn đến file video")
-    parser.add_argument("--mono", action="store_true", help="Chạy chế độ đen trắng (mặc định là có màu)")
+    parser.add_argument("--menu", action="store_true", help="Luôn hiển thị menu chọn chế độ")
+    parser.add_argument("--mono", action="store_true", help="Chế độ đen trắng")
+    parser.add_argument("--matrix", action="store_true", help="Chế độ Matrix Green")
     parser.add_argument("--detailed", "-d", action="store_true", help="Dùng bộ ký tự chi tiết hơn")
     parser.add_argument("--no-audio", action="store_true", help="Tắt âm thanh")
 
     args = parser.parse_args()
 
-    # Nếu người dùng không nhập tham số gì, mở giao diện chọn file / kéo thả
+    # 1. Chọn video nếu chưa truyền vào
     video_path = args.video
+    interactive = False
     if not video_path:
         video_path = prompt_video_input()
+        interactive = True
 
-    play_video(
-        video_path=video_path,
-        color=not args.mono,
-        detailed=args.detailed,
-        with_audio=not args.no_audio
-    )
+    # 2. Nếu chạy tương tác hoặc người dùng truyền cờ --menu (hoặc kéo thả vào .bat không có cờ)
+    has_flags = args.mono or args.matrix or args.detailed or args.no_audio
+    if interactive or args.menu or not has_flags:
+        settings = show_mode_menu(video_path)
+        play_video(
+            video_path=video_path,
+            color=settings["color"],
+            detailed=settings["detailed"],
+            matrix=settings["matrix"],
+            with_audio=settings["with_audio"]
+        )
+    else:
+        # Nếu người dùng tự truyền cờ qua dòng lệnh
+        play_video(
+            video_path=video_path,
+            color=not args.mono and not args.matrix,
+            detailed=args.detailed,
+            matrix=args.matrix,
+            with_audio=not args.no_audio
+        )
 
 if __name__ == "__main__":
     main()
