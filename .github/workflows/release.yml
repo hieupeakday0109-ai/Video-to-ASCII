@@ -1,0 +1,76 @@
+name: Build and Publish Release
+
+on:
+  push:
+    tags:
+      - 'v*'
+  workflow_dispatch:
+
+permissions:
+  contents: write
+
+jobs:
+  release:
+    name: Package and Create GitHub Release
+    runs-on: ubuntu-latest
+
+    steps:
+      - name: Checkout Repository
+        uses: actions/checkout@v4
+
+      - name: Prepare Release Artifacts
+        run: |
+          mkdir -p release-assets
+          
+          # 1. Package Windows Release ZIP
+          zip -r release-assets/Video-to-ASCII-Windows.zip . \
+            -x ".git/*" ".github/*" "__pycache__/*" "*.pyc" "play.bat" "play.sh" "play.command"
+
+          # 2. Package macOS and Linux Release TAR.GZ
+          tar --exclude='.git' \
+              --exclude='.github' \
+              --exclude='__pycache__' \
+              --exclude='play.bat' \
+              --exclude='play.sh' \
+              --exclude='play.command' \
+              -czvf release-assets/Video-to-ASCII-macOS-Linux.tar.gz .
+
+      - name: Create GitHub Release
+        uses: softprops/action-gh-release@v2
+        with:
+          name: "Video to ASCII Player ${{ github.ref_name }}"
+          draft: false
+          prerelease: false
+          generate_release_notes: true
+          body: |
+            ## 🎬 Video to ASCII Player - Bản phát hành chính thức
+
+            Hỗ trợ đầy đủ cho cả **Windows, macOS và Linux**!
+
+            ---
+
+            ### 📦 Tải về gói cài đặt phù hợp với máy của bạn:
+
+            - **🪟 Windows:** 
+              1. Tải về file `Video-to-ASCII-Windows.zip`.
+              2. Giải nén và nhấp đúp vào file `Cai_Dat_Icon.bat` để tự động cài đặt và tạo icon ngoài Desktop!
+            
+            - **🍎 macOS:**
+              1. Tải về file `Video-to-ASCII-macOS-Linux.tar.gz` và giải nén.
+              2. Mở Terminal tại thư mục vừa giải nén và chạy: `bash install.sh` để tạo phím tắt mở trên Desktop.
+
+            - **🐧 Linux (Ubuntu, Debian, Fedora, Arch,...):**
+              1. Tải về file `Video-to-ASCII-macOS-Linux.tar.gz` và giải nén.
+              2. Mở Terminal tại thư mục vừa giải nén và chạy: `bash install.sh` để tạo Desktop shortcut.
+
+            ---
+
+            ### ✨ Các tính năng nổi bật:
+            - 🎨 **Màu sắc TrueColor (RGB):** Tái tạo màu sắc chân thực từng điểm ảnh bằng mã ANSI.
+            - 🟢 **Phong cách Hacker Matrix:** Tông màu xanh neon Cyberpunk siêu ngầu.
+            - 📺 **Đen trắng cổ điển:** Đồ họa ký tự ASCII hoài cổ (Monochrome).
+            - 🔊 **Đồng bộ âm thanh:** Tự động phát âm thanh nền qua FFmpeg (`ffplay`).
+            - 🖥️ **Bảng điều khiển GUI & Phím tắt Desktop:** Dễ dùng cho tất cả mọi người, không cần nhớ câu lệnh!
+          files: |
+            release-assets/Video-to-ASCII-Windows.zip
+            release-assets/Video-to-ASCII-macOS-Linux.tar.gz

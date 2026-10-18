@@ -169,23 +169,64 @@ class AsciiPlayerLauncher:
             cmd_flags.append("--no-audio")
 
         flags_str = " ".join(cmd_flags)
-        py_exe = get_console_python()
-
-        # Tạo file batch tạm thời để chạy bằng Win32 ShellExecute (os.startfile)
-        # Cách này tránh 100% lỗi escape dấu ngoặc kép trên Windows
-        play_bat = os.path.join(SCRIPT_DIR, "play.bat")
-        bat_content = (
-            "@echo off\r\n"
-            "chcp 65001 >nul\r\n"
-            "title Video to ASCII Player\r\n"
-            f'"{py_exe}" "{PLAYER_SCRIPT}" "{video}" {flags_str}\r\n'
-            "pause\r\n"
-        )
 
         try:
-            with open(play_bat, "w", encoding="utf-8") as f:
-                f.write(bat_content)
-            os.startfile(play_bat)
+            if sys.platform == "win32":
+                py_exe = get_console_python()
+                play_bat = os.path.join(SCRIPT_DIR, "play.bat")
+                bat_content = (
+                    "@echo off\r\n"
+                    "chcp 65001 >nul\r\n"
+                    "title Video to ASCII Player\r\n"
+                    f'"{py_exe}" "{PLAYER_SCRIPT}" "{video}" {flags_str}\r\n'
+                    "pause\r\n"
+                )
+                with open(play_bat, "w", encoding="utf-8") as f:
+                    f.write(bat_content)
+                os.startfile(play_bat)
+
+            elif sys.platform == "darwin":  # macOS
+                play_cmd = os.path.join(SCRIPT_DIR, "play.command")
+                cmd_content = (
+                    "#!/usr/bin/env bash\n"
+                    f'cd "{SCRIPT_DIR}"\n'
+                    f'python3 "{PLAYER_SCRIPT}" "{video}" {flags_str}\n'
+                    "echo ''\n"
+                    "read -n 1 -s -r -p '👉 Bấm phím bất kỳ để đóng cửa sổ...'\n"
+                )
+                with open(play_cmd, "w", encoding="utf-8") as f:
+                    f.write(cmd_content)
+                os.chmod(play_cmd, 0o755)
+                subprocess.Popen(["open", play_cmd])
+
+            else:  # Linux
+                play_sh = os.path.join(SCRIPT_DIR, "play.sh")
+                sh_content = (
+                    "#!/usr/bin/env bash\n"
+                    f'cd "{SCRIPT_DIR}"\n'
+                    f'python3 "{PLAYER_SCRIPT}" "{video}" {flags_str}\n'
+                    "echo ''\n"
+                    "read -n 1 -s -r -p '👉 Bấm phím bất kỳ để đóng cửa sổ...'\n"
+                )
+                with open(play_sh, "w", encoding="utf-8") as f:
+                    f.write(sh_content)
+                os.chmod(play_sh, 0o755)
+
+                terminals = ["x-terminal-emulator", "gnome-terminal", "konsole", "xfce4-terminal", "alacritty", "kitty", "xterm"]
+                launched = False
+                for term in terminals:
+                    if shutil.which(term):
+                        if term in ["gnome-terminal", "xfce4-terminal"]:
+                            subprocess.Popen([term, "--", "bash", play_sh])
+                        elif term == "konsole":
+                            subprocess.Popen([term, "-e", "bash", play_sh])
+                        else:
+                            subprocess.Popen([term, "-e", f"bash {play_sh}"])
+                        launched = True
+                        break
+                if not launched:
+                    subprocess.Popen(["bash", play_sh])
+
         except Exception as e:
             messagebox.showerror("Lỗi khởi chạy", f"Không thể khởi chạy:\n{e}")
 
