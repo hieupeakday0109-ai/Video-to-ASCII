@@ -4,7 +4,6 @@ import subprocess
 import tkinter as tk
 from tkinter import ttk, filedialog, messagebox
 
-# Đường dẫn thư mục dự án
 SCRIPT_DIR = os.path.dirname(os.path.abspath(__file__))
 PLAYER_SCRIPT = os.path.join(SCRIPT_DIR, "ascii_player.py")
 PYTHON_EXE = sys.executable
@@ -41,7 +40,7 @@ class AsciiPlayerLauncher:
         self.audio_var = tk.BooleanVar(value=True)       # True / False
         self.detailed_var = tk.BooleanVar(value=False)   # True / False
 
-        # Tự động chọn file video demo nếu có
+        # Tự động chọn file video demo nếu có sẵn trong thư mục
         demo_file = os.path.join(SCRIPT_DIR, "demo.mp4")
         if os.path.isfile(demo_file):
             self.video_path_var.set(demo_file)
@@ -130,7 +129,6 @@ class AsciiPlayerLauncher:
             messagebox.showwarning("Chưa chọn video", "Vui lòng chọn một file video hợp lệ trước khi bắt đầu!")
             return
 
-        # Xây dựng các cờ lệnh
         cmd_flags = []
         mode = self.mode_var.get()
         if mode == "matrix":
@@ -144,17 +142,23 @@ class AsciiPlayerLauncher:
         if not self.audio_var.get():
             cmd_flags.append("--no-audio")
 
-        flags_str = " ".join(cmd_flags)
-        
-        # Lệnh mở PowerShell chiếu video
-        ps_cmd = (
-            f'start powershell -NoExit -Command "'
-            f'chcp 65001 >$null; '
-            f'Set-Location -LiteralPath \'{SCRIPT_DIR}\'; '
-            f'& \'{PYTHON_EXE}\' \'{PLAYER_SCRIPT}\' \'{video}\' {flags_str}"'
-        )
+        # Khởi chạy trong một cửa sổ PowerShell mới độc lập với xử lý encoding UTF-8
+        cmd = [
+            "powershell.exe",
+            "-NoExit",
+            "-ExecutionPolicy", "Bypass",
+            "-Command",
+            f"[Console]::OutputEncoding = [System.Text.Encoding]::UTF8; & '{PYTHON_EXE}' '{PLAYER_SCRIPT}' '{video}' " + " ".join(cmd_flags)
+        ]
 
-        subprocess.Popen(ps_cmd, shell=True)
+        try:
+            subprocess.Popen(
+                cmd,
+                cwd=SCRIPT_DIR,
+                creationflags=subprocess.CREATE_NEW_CONSOLE
+            )
+        except Exception as e:
+            messagebox.showerror("Lỗi khởi chạy", f"Không thể khởi chạy trình phát video:\n{e}")
 
 def main():
     root = tk.Tk()

@@ -5,6 +5,19 @@ import argparse
 import shutil
 import subprocess
 
+# Kích hoạt chế độ mã màu ANSI trên Windows Console
+if sys.platform == "win32":
+    try:
+        import ctypes
+        kernel32 = ctypes.windll.kernel32
+        hOut = kernel32.GetStdHandle(-11)
+        mode = ctypes.c_ulong()
+        if kernel32.GetConsoleMode(hOut, ctypes.byref(mode)):
+            kernel32.SetConsoleMode(hOut, mode.value | 0x0004)
+    except Exception:
+        pass
+    os.system("")
+
 # Tự động kiểm tra và cài đặt thư viện nếu thiếu
 try:
     import cv2
@@ -87,15 +100,12 @@ def prompt_video_terminal_menu():
 
         user_input = input(" 📁 Nhập lựa chọn của bạn: ").strip()
 
-        # Người dùng muốn thoát
         if user_input.lower() in {"q", "exit", "quit"}:
             sys.exit(0)
 
-        # Nếu người dùng bấm Enter luôn khi có danh sách video
         if user_input == "" and videos:
             return videos[0]
 
-        # Nếu người dùng chọn theo số thứ tự trong bảng
         if user_input.isdigit():
             choice_num = int(user_input)
             if 1 <= choice_num <= len(videos):
@@ -104,7 +114,6 @@ def prompt_video_terminal_menu():
                 print(f"\n[-] Số {choice_num} không có trong danh sách. Vui lòng chọn lại!")
                 continue
 
-        # Nếu người dùng kéo thả file hoặc dán đường dẫn trực tiếp
         cleaned_path = user_input.strip("\"' ")
         if os.path.isfile(cleaned_path):
             return os.path.abspath(cleaned_path)
@@ -280,6 +289,10 @@ def play_video(video_path, color=True, detailed=False, matrix=False, with_audio=
         sys.stdout.write("\x1b[?25h\x1b[0m\n")
         sys.stdout.flush()
         print("\n[+] Đã kết thúc phát video.")
+        try:
+            input("\n👉 Nhấn Enter để đóng cửa sổ...")
+        except Exception:
+            pass
 
 def main():
     parser = argparse.ArgumentParser(
@@ -294,7 +307,7 @@ def main():
 
     args = parser.parse_args()
 
-    # 1. Chọn video (bằng menu dòng lệnh, KHÔNG dùng cửa sổ popup)
+    # 1. Chọn video (bằng menu dòng lệnh)
     video_path = args.video
     interactive = False
     if not video_path:
@@ -322,4 +335,11 @@ def main():
         )
 
 if __name__ == "__main__":
-    main()
+    try:
+        main()
+    except Exception as e:
+        print(f"\n[!] Có lỗi xảy ra trong quá trình phát video:\n{e}")
+        try:
+            input("\n👉 Nhấn Enter để thoát...")
+        except Exception:
+            pass
