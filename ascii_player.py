@@ -299,24 +299,28 @@ def main():
         description="Trình phát video bằng ký tự ASCII trên PowerShell / Terminal."
     )
     parser.add_argument("video", nargs="?", default=None, help="Đường dẫn đến file video")
-    parser.add_argument("--menu", action="store_true", help="Luôn hiển thị menu chọn chế độ")
-    parser.add_argument("--mono", action="store_true", help="Chế độ đen trắng")
+    parser.add_argument("--color", "-c", action="store_true", help="Chế độ màu TrueColor")
+    parser.add_argument("--mono", "-m", action="store_true", help="Chế độ đen trắng")
     parser.add_argument("--matrix", action="store_true", help="Chế độ Matrix Green")
     parser.add_argument("--detailed", "-d", action="store_true", help="Dùng bộ ký tự chi tiết hơn")
     parser.add_argument("--no-audio", action="store_true", help="Tắt âm thanh")
+    parser.add_argument("--direct", action="store_true", help="Chạy thẳng không hỏi lại menu")
+    parser.add_argument("--menu", action="store_true", help="Luôn hiển thị menu chọn chế độ")
 
     args = parser.parse_args()
 
-    # 1. Chọn video (bằng menu dòng lệnh)
+    # 1. Chọn video (bằng menu dòng lệnh nếu chưa có)
     video_path = args.video
     interactive = False
     if not video_path:
         video_path = prompt_video_terminal_menu()
         interactive = True
 
-    # 2. Hiển thị menu chọn chế độ
-    has_flags = args.mono or args.matrix or args.detailed or args.no_audio
-    if interactive or args.menu or not has_flags:
+    # 2. Quyết định chế độ phát:
+    # Nếu có cờ --direct hoặc bất kỳ cờ chế độ nào, phát trực tiếp ngay lập tức!
+    has_flags = args.direct or args.color or args.mono or args.matrix or args.detailed or args.no_audio
+
+    if args.menu or (interactive and not has_flags) or (not has_flags and not args.direct):
         settings = show_mode_menu(video_path)
         play_video(
             video_path=video_path,

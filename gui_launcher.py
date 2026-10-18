@@ -129,12 +129,14 @@ class AsciiPlayerLauncher:
             messagebox.showwarning("Chưa chọn video", "Vui lòng chọn một file video hợp lệ trước khi bắt đầu!")
             return
 
-        cmd_flags = []
+        cmd_flags = ["--direct"]
         mode = self.mode_var.get()
         if mode == "matrix":
             cmd_flags.append("--matrix")
         elif mode == "mono":
             cmd_flags.append("--mono")
+        else:
+            cmd_flags.append("--color")
 
         if self.detailed_var.get():
             cmd_flags.append("--detailed")
@@ -142,18 +144,11 @@ class AsciiPlayerLauncher:
         if not self.audio_var.get():
             cmd_flags.append("--no-audio")
 
-        # Khởi chạy trong một cửa sổ PowerShell mới độc lập với xử lý encoding UTF-8
-        cmd = [
-            "powershell.exe",
-            "-NoExit",
-            "-ExecutionPolicy", "Bypass",
-            "-Command",
-            f"[Console]::OutputEncoding = [System.Text.Encoding]::UTF8; & '{PYTHON_EXE}' '{PLAYER_SCRIPT}' '{video}' " + " ".join(cmd_flags)
-        ]
-
+        # Khởi chạy trực tiếp Python trong một cửa sổ Console độc lập
         try:
+            full_cmd = [PYTHON_EXE, PLAYER_SCRIPT, video] + cmd_flags
             subprocess.Popen(
-                cmd,
+                full_cmd,
                 cwd=SCRIPT_DIR,
                 creationflags=subprocess.CREATE_NEW_CONSOLE
             )
