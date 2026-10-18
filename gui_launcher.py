@@ -29,6 +29,13 @@ class AsciiPlayerLauncher:
         self.root.geometry("540x500")
         self.root.resizable(False, False)
 
+        icon_path = os.path.join(SCRIPT_DIR, "icon.ico")
+        if os.path.isfile(icon_path):
+            try:
+                self.root.iconbitmap(icon_path)
+            except Exception:
+                pass
+
         # Cài đặt giao diện tối hiện đại
         self.bg_color = "#181825"
         self.card_bg = "#1e1e2e"
