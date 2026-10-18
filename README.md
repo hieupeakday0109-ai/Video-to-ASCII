@@ -4,7 +4,19 @@ Chương trình chuyển đổi và phát video trực tiếp trong **Terminal /
 
 ---
 
-## ⚡ Hướng dẫn cài đặt nhanh 1-Click
+## 🚀 Tải về bản chạy ngay (Không cần cài đặt Python)
+
+👉 **Tải các phiên bản phát hành mới nhất tại:** **[GitHub Releases](https://github.com/hieupeakday0109-ai/Video-to-ASCII/releases)**
+
+| Hệ điều hành | Tệp tải về | Cách sử dụng |
+| :--- | :--- | :--- |
+| **🪟 Windows** | **`VideoToASCII-Windows.exe`** | Nhấp đúp chuột để mở giao diện, hoặc kéo thả video vào file `.exe` để phát ngay! |
+| **🍎 macOS** | **`VideoToASCII-macOS`** | Chạy `chmod +x VideoToASCII-macOS` và nhấp đúp hoặc chạy `./VideoToASCII-macOS` |
+| **🐧 Linux** | **`VideoToASCII-Linux`** | Chạy `chmod +x VideoToASCII-Linux` và chạy `./VideoToASCII-Linux` |
+
+---
+
+## ⚡ Hướng dẫn cài đặt bằng mã nguồn (Dành cho nhà phát triển)
 
 ### 🪟 Trên Windows
 1. Tải bản nén từ mục [Releases](https://github.com/hieupeakday0109-ai/Video-to-ASCII/releases) hoặc tải toàn bộ mã nguồn về máy.

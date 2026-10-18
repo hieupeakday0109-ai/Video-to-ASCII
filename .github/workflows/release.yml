@@ -1,4 +1,4 @@
-name: Build and Publish Release
+name: Build Standalone Executables and Publish Release
 
 on:
   push:
@@ -10,58 +10,103 @@ permissions:
   contents: write
 
 jobs:
-  release:
-    name: Package and Create GitHub Release
-    runs-on: ubuntu-latest
+  build-binaries:
+    name: Build Binary on ${{ matrix.os }}
+    runs-on: ${{ matrix.os }}
+    strategy:
+      fail-fast: false
+      matrix:
+        include:
+          - os: windows-latest
+            artifact_name: VideoToASCII-Windows.exe
+            run_build: |
+              pip install -r requirements.txt pyinstaller
+              pyinstaller --clean --onefile --icon=icon.ico --name=VideoToASCII-Windows app.py
+              mkdir dist-release
+              copy dist\VideoToASCII-Windows.exe dist-release\
+            shell: cmd
+
+          - os: macos-latest
+            artifact_name: VideoToASCII-macOS
+            run_build: |
+              pip3 install -r requirements.txt pyinstaller
+              pyinstaller --clean --onefile --name=VideoToASCII-macOS app.py
+              chmod +x dist/VideoToASCII-macOS
+              mkdir -p dist-release
+              cp dist/VideoToASCII-macOS dist-release/
+            shell: bash
+
+          - os: ubuntu-latest
+            artifact_name: VideoToASCII-Linux
+            run_build: |
+              sudo apt-get update && sudo apt-get install -y libgl1 libglib2.0-0
+              pip3 install -r requirements.txt pyinstaller
+              pyinstaller --clean --onefile --name=VideoToASCII-Linux app.py
+              chmod +x dist/VideoToASCII-Linux
+              mkdir -p dist-release
+              cp dist/VideoToASCII-Linux dist-release/
+            shell: bash
 
     steps:
       - name: Checkout Repository
         uses: actions/checkout@v4
 
-      - name: Prepare Release Artifacts
-        run: |
-          mkdir -p release-assets
-          
-          # 1. Package Windows Release ZIP
-          zip -r release-assets/Video-to-ASCII-Windows.zip . \
-            -x ".git/*" ".github/*" "__pycache__/*" "*.pyc" "play.bat" "play.sh" "play.command"
+      - name: Set up Python
+        uses: actions/setup-python@v5
+        with:
+          python-version: "3.12"
 
-          # 2. Package macOS and Linux Release TAR.GZ
-          tar --exclude='.git' \
-              --exclude='.github' \
-              --exclude='__pycache__' \
-              --exclude='play.bat' \
-              --exclude='play.sh' \
-              --exclude='play.command' \
-              -czvf release-assets/Video-to-ASCII-macOS-Linux.tar.gz .
+      - name: Build Standalone Executable
+        run: ${{ matrix.run_build }}
+        shell: ${{ matrix.shell }}
+
+      - name: Upload Artifact
+        uses: actions/upload-artifact@v4
+        with:
+          name: ${{ matrix.artifact_name }}
+          path: dist-release/*
+
+  publish-release:
+    name: Publish Release with All Binaries
+    needs: build-binaries
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout Repository
+        uses: actions/checkout@v4
+
+      - name: Download all compiled binaries
+        uses: actions/download-artifact@v4
+        with:
+          path: release-binaries
+          merge-multiple: true
+
+      - name: List Artifacts
+        run: ls -lh release-binaries
 
       - name: Create GitHub Release
         uses: softprops/action-gh-release@v2
         with:
-          name: "Video to ASCII Player ${{ github.ref_name }}"
+          name: "Video to ASCII Player ${{ github.ref_name }} (Standalone Binaries)"
           draft: false
           prerelease: false
           generate_release_notes: true
           body: |
-            ## 🎬 Video to ASCII Player - Bản phát hành chính thức
+            ## 🎬 Video to ASCII Player - Bản phát hành chạy độc lập (Standalone Executables)
 
-            Hỗ trợ đầy đủ cho cả **Windows, macOS và Linux**!
+            🚀 **Không cần cài đặt Python! Bấm phát chạy luôn!**
 
             ---
 
-            ### 📦 Tải về gói cài đặt phù hợp với máy của bạn:
+            ### 📦 Tải về phiên bản cho máy của bạn:
 
-            - **🪟 Windows:** 
-              1. Tải về file `Video-to-ASCII-Windows.zip`.
-              2. Giải nén và nhấp đúp vào file `Cai_Dat_Icon.bat` để tự động cài đặt và tạo icon ngoài Desktop!
+            - **🪟 Windows:** Tải file **`VideoToASCII-Windows.exe`**
+              - *Cách dùng:* Nhấp đúp chuột để mở bảng điều khiển chọn video và chế độ, hoặc kéo thả trực tiếp file video vào file `.exe` để phát ngay lập tức!
             
-            - **🍎 macOS:**
-              1. Tải về file `Video-to-ASCII-macOS-Linux.tar.gz` và giải nén.
-              2. Mở Terminal tại thư mục vừa giải nén và chạy: `bash install.sh` để tạo phím tắt mở trên Desktop.
-
-            - **🐧 Linux (Ubuntu, Debian, Fedora, Arch,...):**
-              1. Tải về file `Video-to-ASCII-macOS-Linux.tar.gz` và giải nén.
-              2. Mở Terminal tại thư mục vừa giải nén và chạy: `bash install.sh` để tạo Desktop shortcut.
+            - **🍎 macOS (Macbook / iMac):** Tải file **`VideoToASCII-macOS`**
+              - *Cách dùng:* Mở Terminal tại thư mục tải về, chạy `chmod +x VideoToASCII-macOS` rồi chạy `./VideoToASCII-macOS`.
+            
+            - **🐧 Linux (Ubuntu, Debian, Fedora, Arch,...):** Tải file **`VideoToASCII-Linux`**
+              - *Cách dùng:* Mở Terminal tại thư mục tải về, chạy `chmod +x VideoToASCII-Linux` rồi chạy `./VideoToASCII-Linux`.
 
             ---
 
@@ -70,7 +115,6 @@ jobs:
             - 🟢 **Phong cách Hacker Matrix:** Tông màu xanh neon Cyberpunk siêu ngầu.
             - 📺 **Đen trắng cổ điển:** Đồ họa ký tự ASCII hoài cổ (Monochrome).
             - 🔊 **Đồng bộ âm thanh:** Tự động phát âm thanh nền qua FFmpeg (`ffplay`).
-            - 🖥️ **Bảng điều khiển GUI & Phím tắt Desktop:** Dễ dùng cho tất cả mọi người, không cần nhớ câu lệnh!
+            - 🖥️ **Bảng điều khiển GUI & Kéo thả nhanh:** Dễ dùng cho tất cả mọi người, không cần nhớ câu lệnh!
           files: |
-            release-assets/Video-to-ASCII-Windows.zip
-            release-assets/Video-to-ASCII-macOS-Linux.tar.gz
+            release-binaries/*

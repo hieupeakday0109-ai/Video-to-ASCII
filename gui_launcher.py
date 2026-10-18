@@ -1,6 +1,7 @@
 import os
 import sys
 import shutil
+import tempfile
 import tkinter as tk
 from tkinter import ttk, filedialog, messagebox
 
@@ -169,16 +170,23 @@ class AsciiPlayerLauncher:
             cmd_flags.append("--no-audio")
 
         flags_str = " ".join(cmd_flags)
+        is_frozen = getattr(sys, "frozen", False)
 
+        temp_dir = tempfile.gettempdir()
         try:
             if sys.platform == "win32":
-                py_exe = get_console_python()
-                play_bat = os.path.join(SCRIPT_DIR, "play.bat")
+                if is_frozen:
+                    exec_cmd = f'"{sys.executable}" "{video}" {flags_str}'
+                else:
+                    py_exe = get_console_python()
+                    exec_cmd = f'"{py_exe}" "{PLAYER_SCRIPT}" "{video}" {flags_str}'
+
+                play_bat = os.path.join(temp_dir, "play_ascii.bat")
                 bat_content = (
                     "@echo off\r\n"
                     "chcp 65001 >nul\r\n"
                     "title Video to ASCII Player\r\n"
-                    f'"{py_exe}" "{PLAYER_SCRIPT}" "{video}" {flags_str}\r\n'
+                    f"{exec_cmd}\r\n"
                     "pause\r\n"
                 )
                 with open(play_bat, "w", encoding="utf-8") as f:
@@ -186,11 +194,15 @@ class AsciiPlayerLauncher:
                 os.startfile(play_bat)
 
             elif sys.platform == "darwin":  # macOS
-                play_cmd = os.path.join(SCRIPT_DIR, "play.command")
+                if is_frozen:
+                    exec_cmd = f'"{sys.executable}" "{video}" {flags_str}'
+                else:
+                    exec_cmd = f'python3 "{PLAYER_SCRIPT}" "{video}" {flags_str}'
+
+                play_cmd = os.path.join(temp_dir, "play_ascii.command")
                 cmd_content = (
                     "#!/usr/bin/env bash\n"
-                    f'cd "{SCRIPT_DIR}"\n'
-                    f'python3 "{PLAYER_SCRIPT}" "{video}" {flags_str}\n'
+                    f"{exec_cmd}\n"
                     "echo ''\n"
                     "read -n 1 -s -r -p '👉 Bấm phím bất kỳ để đóng cửa sổ...'\n"
                 )
@@ -200,11 +212,15 @@ class AsciiPlayerLauncher:
                 subprocess.Popen(["open", play_cmd])
 
             else:  # Linux
-                play_sh = os.path.join(SCRIPT_DIR, "play.sh")
+                if is_frozen:
+                    exec_cmd = f'"{sys.executable}" "{video}" {flags_str}'
+                else:
+                    exec_cmd = f'python3 "{PLAYER_SCRIPT}" "{video}" {flags_str}'
+
+                play_sh = os.path.join(temp_dir, "play_ascii.sh")
                 sh_content = (
                     "#!/usr/bin/env bash\n"
-                    f'cd "{SCRIPT_DIR}"\n'
-                    f'python3 "{PLAYER_SCRIPT}" "{video}" {flags_str}\n'
+                    f"{exec_cmd}\n"
                     "echo ''\n"
                     "read -n 1 -s -r -p '👉 Bấm phím bất kỳ để đóng cửa sổ...'\n"
                 )

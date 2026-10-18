@@ -18,3 +18,9 @@ play.bat
 *.mov
 *.wmv
 *.flv
+
+# PyInstaller / Build artifacts
+build/
+dist/
+dist-release/
+*.spec
